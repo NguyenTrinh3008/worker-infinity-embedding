@@ -3,6 +3,43 @@ from utils import create_error_response
 from typing import Any
 from embedding_service import EmbeddingService
 
+# Model-specific instruction prompts configuration
+MODEL_INSTRUCTIONS = {
+    "BAAI/bge-code-v1": "<instruct>Given a question that consists of a mix of text and code snippets, retrieve relevant answers that also consist of a mix of text and code snippets, and can help answer the question.\n<query>",
+    "BAAI/bge-large-en-v1.5": "",  # No instruction needed
+    "BAAI/bge-small-en-v1.5": "",  # No instruction needed
+    # Add other models as needed
+}
+
+def preprocess_embedding_input(model_name: str, embedding_input):
+    """
+    Preprocess embedding input based on model requirements
+    Adds instruction prompts for models that require them
+    """
+    # Handle None or empty input
+    if embedding_input is None:
+        return None
+    
+    if not model_name or model_name not in MODEL_INSTRUCTIONS:
+        return embedding_input
+    
+    instruction = MODEL_INSTRUCTIONS[model_name]
+    if not instruction:  # Empty string means no instruction needed
+        return embedding_input
+    
+    # Handle both string and list inputs
+    if isinstance(embedding_input, str):
+        return instruction + embedding_input
+    elif isinstance(embedding_input, list):
+        # Filter out None values and handle empty strings
+        processed_list = []
+        for text in embedding_input:
+            if text is not None:
+                processed_list.append(instruction + str(text))
+        return processed_list if processed_list else None
+    else:
+        return embedding_input
+
 # Gracefully catch configuration errors (e.g. missing env vars) so the user sees
 # a clean message instead of a full Python traceback when the container starts.
 try:
@@ -32,8 +69,18 @@ async def async_generator_handler(job: dict[str, Any]):
                 return create_error_response(
                     "Did not specify model in openai_input"
                 ).model_dump()
+            
+            # Preprocess input with instruction prompt if needed
+            original_input = openai_input.get("input")
+            if original_input is None:
+                return create_error_response("Missing 'input' field in request").model_dump()
+            
+            processed_input = preprocess_embedding_input(model_name, original_input)
+            if processed_input is None:
+                return create_error_response("Invalid or empty input after preprocessing").model_dump()
+            
             call_fn, kwargs = embedding_service.route_openai_get_embeddings, {
-                "embedding_input": openai_input.get("input"),
+                "embedding_input": processed_input,  # Use processed input
                 "model_name": model_name,
                 "return_as_list": True,
             }
@@ -51,9 +98,21 @@ async def async_generator_handler(job: dict[str, Any]):
                 "model_name": job_input.get("model"),
             }
         elif job_input.get("input"):
+            model_name = job_input.get("model")
+            original_input = job_input.get("input")
+            
+            # Validate input
+            if original_input is None:
+                return create_error_response("Missing 'input' field in request").model_dump()
+            
+            # Preprocess input with instruction prompt if needed
+            processed_input = preprocess_embedding_input(model_name, original_input)
+            if processed_input is None:
+                return create_error_response("Invalid or empty input after preprocessing").model_dump()
+            
             call_fn, kwargs = embedding_service.route_openai_get_embeddings, {
-                "embedding_input": job_input.get("input"),
-                "model_name": job_input.get("model"),
+                "embedding_input": processed_input,  # Use processed input
+                "model_name": model_name,
             }
         else:
             return create_error_response(f"Invalid input: {job}").model_dump()

@@ -22,10 +22,10 @@ RUN uv pip install -r /requirements.txt --system
 # install torch
 RUN pip install torch==2.5.1+cu124 --index-url https://download.pytorch.org/whl/test/cu124 --no-cache-dir
 
-# Add src files
+# Add src files (includes updated handler.py with model-specific instruction support)
 ADD src .
 
-# Add test input
+# Add test input (supports both BAAI/bge-small-en-v1.5 and BAAI/bge-code-v1)
 COPY test_input.json /test_input.json
 
 # start the handler

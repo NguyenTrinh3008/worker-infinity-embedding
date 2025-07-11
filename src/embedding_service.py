@@ -63,6 +63,16 @@ class EmbeddingService:
         """returns embeddings for the input text"""
         if not self.is_running:
             await self.start()
+        
+        # Validate embedding_input
+        if embedding_input is None:
+            raise ValueError("embedding_input cannot be None")
+        
+        # Check if the requested model is available
+        if model_name not in self.engine_array.engines_dict:
+            available_models = list(self.engine_array.engines_dict.keys())
+            raise ValueError(f"Model '{model_name}' not found. Available models: {available_models}")
+        
         if not isinstance(embedding_input, list):
             embedding_input = [embedding_input]
 
@@ -82,6 +92,12 @@ class EmbeddingService:
         """Rerank the documents based on the query"""
         if not self.is_running:
             await self.start()
+        
+        # Check if the requested model is available
+        if model_name not in self.engine_array.engines_dict:
+            available_models = list(self.engine_array.engines_dict.keys())
+            raise ValueError(f"Model '{model_name}' not found. Available models: {available_models}")
+        
         scores, usage = await self.engine_array[model_name].rerank(
             query=query, docs=docs, raw_scores=False
         )
