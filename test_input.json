@@ -1,6 +1,6 @@
 {
   "input": {
-    "model": "BAAI/bge-small-en-v1.5",
-    "input": "Hello, world!"
+    "model": "BAAI/bge-code-v1",
+    "input": ["Hello world", "def function(): return True"]
   }
 }
