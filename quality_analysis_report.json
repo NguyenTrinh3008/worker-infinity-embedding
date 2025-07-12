@@ -1,0 +1,47 @@
+{
+  "report": {
+    "overall_score": 1.0,
+    "embedding_analysis": {
+      "dimension": 768,
+      "norm": 3.353254625480677,
+      "mean": -0.00691037205979228,
+      "std": 0.12080266543352272,
+      "min": -0.25260981917381287,
+      "max": 0.15106438100337982,
+      "zeros_count": 0,
+      "non_zeros_count": 768,
+      "is_valid": true,
+      "quality_checks": {
+        "correct_dimension": true,
+        "has_variation": true,
+        "reasonable_norm": true,
+        "not_all_zeros": true,
+        "values_in_range": true
+      },
+      "quality_score": 1.0
+    },
+    "consistency_analysis": {
+      "consistent_outputs": true,
+      "fallback_system_stable": true,
+      "deterministic_behavior": true
+    },
+    "performance_analysis": {
+      "token_usage": {
+        "prompt_tokens": 6,
+        "total_tokens": 6
+      },
+      "json_format_valid": true,
+      "error_handling_working": true
+    },
+    "production_ready": true
+  },
+  "similarity_info": {
+    "similarity_expectations": {
+      "identical_code": 1.0,
+      "similar_functions": ">0.8",
+      "different_code_types": "<0.5"
+    }
+  },
+  "timestamp": "2025-01-12",
+  "analysis_type": "docker_log_analysis"
+}

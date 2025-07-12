@@ -125,19 +125,45 @@ def list_embeddings_to_response(
     model: str,
     usage: int,
 ) -> Dict[str, Any]:
-    return dict(
-        model=model,
-        object="list",
-        data=[
-            dict(
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.debug(f"list_embeddings_to_response called with embeddings type: {type(embeddings)}, model: {model}, usage: {usage}")
+    
+    if embeddings is None:
+        logger.error("embeddings is None!")
+        raise ValueError("embeddings cannot be None")
+    
+    try:
+        # Convert embeddings to list to inspect it
+        embeddings_list = list(embeddings)
+        logger.debug(f"embeddings converted to list, length: {len(embeddings_list)}")
+        
+        data = []
+        for count, emb in enumerate(embeddings_list):
+            logger.debug(f"Processing embedding {count}, type: {type(emb)}")
+            if emb is None:
+                logger.error(f"Embedding at index {count} is None!")
+                continue
+            data.append(dict(
                 object="embedding",
                 embedding=emb.tolist(),
                 index=count,
-            )
-            for count, emb in enumerate(embeddings)
-        ],
-        usage=dict(prompt_tokens=usage, total_tokens=usage),
-    )
+            ))
+        
+        result = dict(
+            model=model,
+            object="list",
+            data=data,
+            usage=dict(prompt_tokens=usage, total_tokens=usage),
+        )
+        
+        logger.debug(f"list_embeddings_to_response returning: {len(data)} embeddings")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in list_embeddings_to_response: {str(e)}", exc_info=True)
+        raise
 
 
 def to_rerank_response(
