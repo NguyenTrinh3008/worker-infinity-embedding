@@ -4,6 +4,7 @@ from functools import cached_property
 
 DEFAULT_BATCH_SIZE = 32
 DEFAULT_BACKEND = "torch"
+DEFAULT_DEVICE = "auto"  # auto-detect GPU, fallback to CPU
 
 if not os.environ.get("INFINITY_QUEUE_SIZE"):
     # how many items can be in the queue
@@ -26,6 +27,34 @@ class EmbeddingServiceConfig:
     @cached_property
     def backend(self):
         return os.environ.get("BACKEND", DEFAULT_BACKEND)
+
+    @cached_property
+    def device(self):
+        """
+        Device configuration for inference.
+        Supports: 'auto', 'cuda', 'cpu', or specific device like 'cuda:0'
+        
+        'auto' will:
+        - Use CUDA if available and not explicitly disabled
+        - Fall back to CPU if CUDA is not available
+        """
+        device = os.environ.get("DEVICE", DEFAULT_DEVICE)
+        
+        if device == "auto":
+            # Auto-detect GPU availability
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    device = "cuda"
+                    print(f"GPU detected: {torch.cuda.get_device_name(0)} - Using CUDA")
+                else:
+                    device = "cpu"
+                    print("No GPU detected - Using CPU")
+            except ImportError:
+                device = "cpu"
+                print("PyTorch not available - Using CPU")
+        
+        return device
 
     @cached_property
     def model_names(self) -> list[str]:

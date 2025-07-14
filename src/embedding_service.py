@@ -37,6 +37,9 @@ class EmbeddingService:
             elif env_batch_sizes:
                 logger.info(f"Using environment BATCH_SIZES for {model_name}: {batch_size}")
             
+            # Log device configuration
+            logger.info(f"Configuring {model_name} with device: {self.config.device}")
+            
             # Only include supported EngineArgs parameters
             supported_args = {}
             # Note: EngineArgs only accepts specific parameters, filter out unsupported ones
@@ -46,6 +49,7 @@ class EmbeddingService:
                     model_name_or_path=model_name,
                     batch_size=batch_size,
                     engine=self.config.backend,
+                    device=self.config.device,  # Add device configuration for GPU support
                     dtype=dtype,
                     model_warmup=False,
                     lengths_via_tokenize=True,

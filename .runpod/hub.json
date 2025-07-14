@@ -48,6 +48,15 @@
         }
       },
       {
+        "key": "DEVICE",
+        "input": {
+          "name": "Device",
+          "type": "string",
+          "description": "Device for inference (auto, cuda, cpu, cuda:0). 'auto' detects GPU availability.",
+          "default": "auto"
+        }
+      },
+      {
         "key": "INFINITY_QUEUE_SIZE",
         "input": {
           "name": "Infinity Queue Size",

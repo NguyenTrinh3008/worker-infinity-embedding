@@ -14,6 +14,7 @@ services:
                 capabilities: [gpu]
       environment:
         MODEL_NAMES: "BAAI/bge-code-v1"
+        DEVICE: "cuda"  # Force GPU usage. Options: auto, cuda, cpu, cuda:0
         NVIDIA_VISIBLE_DEVICES: "all"
       volumes:
         - ./data/runpod-volume:/runpod-volume
