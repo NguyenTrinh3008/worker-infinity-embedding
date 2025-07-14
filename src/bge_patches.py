@@ -177,21 +177,30 @@ def apply_bge_patches(model_instance, model_name: str):
 
 
 # BGE model configuration overrides
+# NOTE: These are FALLBACK configurations used only when environment variables are not set
+# To override these values in production (e.g., RunPod), set the BATCH_SIZES environment variable
+# Example: BATCH_SIZES=64;32;16 for multiple models
 BGE_MODEL_CONFIGS = {
     "BAAI/bge-code-v1": {
-        "batch_size": 32,  # Use smaller batch size for problematic models
+        "batch_size": 32,  # Fallback batch size for problematic models (only used if BATCH_SIZES env var not set)
         # Remove unsupported parameters for EngineArgs
     },
     "BAAI/bge-small-en-v1.5": {
-        "batch_size": 32,
+        "batch_size": 32,  # Fallback batch size (only used if BATCH_SIZES env var not set)
     },
     "BAAI/bge-large-en-v1.5": {
-        "batch_size": 16, 
+        "batch_size": 16,   # Fallback batch size (only used if BATCH_SIZES env var not set)
     }
 }
 
 def get_bge_model_config(model_name: str) -> dict:
-    """Get BGE-specific model configuration"""
+    """
+    Get BGE-specific model configuration
+    
+    Note: The batch_size in this config is only used as a fallback
+    when the BATCH_SIZES environment variable is not set.
+    For production deployment (e.g., RunPod), use BATCH_SIZES env var to override.
+    """
     config = BGE_MODEL_CONFIGS.get(model_name, {})
-    logger.debug(f"BGE config for {model_name}: {config}")
+    logger.debug(f"BGE fallback config for {model_name}: {config}")
     return config 

@@ -10,6 +10,7 @@ from bge_patches import apply_bge_patches, get_bge_model_config
 
 import asyncio
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,17 @@ class EmbeddingService:
             # Get BGE-specific configuration
             bge_config = get_bge_model_config(model_name)
             
-            # Override batch size for problematic models
-            if bge_config.get("batch_size"):
+            # Check if BATCH_SIZES environment variable is explicitly set
+            # If not set, use BGE config batch_size as fallback for problematic models
+            env_batch_sizes = os.environ.get("BATCH_SIZES")
+            if not env_batch_sizes and bge_config.get("batch_size"):
+                # Only override if BATCH_SIZES env var is not set
+                original_batch_size = batch_size
                 batch_size = bge_config["batch_size"]
-                logger.info(f"Using BGE-specific batch size {batch_size} for {model_name}")
+                logger.info(f"Using BGE-specific batch size {batch_size} for {model_name} (original: {original_batch_size})")
+                logger.info("To override this, set BATCH_SIZES environment variable")
+            elif env_batch_sizes:
+                logger.info(f"Using environment BATCH_SIZES for {model_name}: {batch_size}")
             
             # Only include supported EngineArgs parameters
             supported_args = {}
